@@ -1,0 +1,99 @@
+deployment:
+  forceRedeploy: true
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    maxSurge: 1
+    maxUnavailable: 0
+  containers:
+    -
+      name: chart-museum
+      image:
+        repository: chartmuseum/chartmuseum
+        tag: latest
+      resources:
+        requests:
+          cpu: 500m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 128Mi
+      args:
+        - --port=80
+        - --debug=true
+        - --basic-auth-user=$(USERNAME)
+        - --basic-auth-pass=$(PASSWORD)
+        - --auth-anonymous-get
+      volumeMounts:
+        - name: storage
+          mountPath: /charts
+          subPath: charts
+      env:
+        - 
+          name: STORAGE
+          value: local
+        - 
+          name: STORAGE_LOCAL_ROOTDIR
+          value: /charts
+      envFromSecret:
+        -
+          secretName: auth-secret
+          envs:
+            - 
+              name: USERNAME
+              key: user
+            -
+              name: PASSWORD
+              key: pass
+  volumes:
+    -
+      name: storage
+      type: pvc
+      typeName: storage-pvc
+
+ingress:
+  name: ingress
+  hosts:
+    -
+      host: charts.pricegrabber.xyz
+      paths:
+        -
+          path: "/"
+          pathType: Prefix
+          serviceName: service
+          servicePort: http
+  tls:
+    secretName: tls-secret
+
+pvcs:
+  -
+    name: storage-pvc
+    storageClassName: local-path
+    accessModes:
+      - ReadWriteMany
+    size: 1Gi
+    volumeMode: Filesystem
+
+secrets:
+  -
+    name: tls-secret
+    type: kubernetes.io/tls
+    data:
+      tls.crt: b64:$TlsCrt
+      tls.key: b64:$TlsKey
+  -
+    name: auth-secret
+    type: Opaque
+    data:
+      user: $ChartMuseumUsername
+      pass: $ChartMuseumPassword
+
+services:
+  -
+    name: service
+    type: ClusterIP
+    ports:
+      -
+        name: http
+        protocol: TCP
+        port: 80
