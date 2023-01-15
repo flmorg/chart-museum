@@ -1,5 +1,6 @@
+forceRedeploy: true
+
 deployment:
-  forceRedeploy: true
   replicas: 1
   strategy:
     type: RollingUpdate
@@ -55,7 +56,7 @@ ingress:
   name: ingress
   hosts:
     -
-      host: charts.pricegrabber.xyz
+      host: charts.mariusne.com
       paths:
         -
           path: "/"
