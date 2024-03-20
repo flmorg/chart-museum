@@ -10,8 +10,8 @@ deployment:
     -
       name: chart-museum
       image:
-        repository: chartmuseum/chartmuseum
-        tag: latest
+        repository: ghcr.io/helm/chartmuseum
+        tag: v0.16.1
       resources:
         requests:
           cpu: 500m
@@ -42,15 +42,28 @@ deployment:
           envs:
             - 
               name: USERNAME
-              key: user
+              key: USERNAME
             -
               name: PASSWORD
-              key: pass
+              key: PASSWORD
   volumes:
     -
       name: storage
       type: pvc
       typeName: storage-pvc
+
+infisicalSecrets:
+  -
+    name: infisical-certificates
+    serviceTokenSecretName: service-token
+    secretsPath: /certificates
+    secretName: tls-secret
+    secretType: kubernetes.io/tls
+  -
+    name: infisical-chartmuseum
+    serviceTokenSecretName: service-token
+    secretsPath: /chartmuseum
+    secretName: auth-secret
 
 ingress:
   name: ingress
@@ -74,20 +87,6 @@ pvcs:
       - ReadWriteMany
     size: 1Gi
     volumeMode: Filesystem
-
-secrets:
-  -
-    name: tls-secret
-    type: kubernetes.io/tls
-    data:
-      tls.crt: b64:$TlsCrt
-      tls.key: b64:$TlsKey
-  -
-    name: auth-secret
-    type: Opaque
-    data:
-      user: $ChartMuseumUsername
-      pass: $ChartMuseumPassword
 
 services:
   -
