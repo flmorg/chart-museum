@@ -30,37 +30,33 @@ deployment:
           mountPath: /charts
           subPath: charts
       env:
-        - 
-          name: STORAGE
+        - name: STORAGE
           value: local
-        - 
-          name: STORAGE_LOCAL_ROOTDIR
+
+        - name: STORAGE_LOCAL_ROOTDIR
           value: /charts
       envFromSecret:
         -
           secretName: auth-secret
           envs:
-            - 
-              name: USERNAME
+            - name: USERNAME
               key: USERNAME
-            -
-              name: PASSWORD
+
+            - name: PASSWORD
               key: PASSWORD
   volumes:
-    -
-      name: storage
+    - name: storage
       type: pvc
       typeName: storage-pvc
 
 infisicalSecrets:
-  -
-    name: infisical-certificates
+  - name: infisical-certificates
     serviceTokenSecretName: service-token
     secretsPath: /certificates
     secretName: tls-secret
     secretType: kubernetes.io/tls
-  -
-    name: infisical-chartmuseum
+
+  - name: infisical-chartmuseum
     serviceTokenSecretName: service-token
     secretsPath: /chartmuseum
     secretName: auth-secret
@@ -71,8 +67,7 @@ ingress:
     -
       host: charts.mariusne.com
       paths:
-        -
-          path: "/"
+        - path: "/"
           pathType: Prefix
           serviceName: service
           servicePort: http
@@ -82,9 +77,9 @@ ingress:
 pvcs:
   -
     name: storage-pvc
-    storageClassName: local-path
+    storageClassName: local-path-persistent
     accessModes:
-      - ReadWriteMany
+      - ReadWriteOnce
     size: 1Gi
     volumeMode: Filesystem
 
